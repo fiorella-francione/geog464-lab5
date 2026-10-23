@@ -1,0 +1,119 @@
+/* PRESENTATION: what it looks like */
+:root {                                   
+  --accent: #093322;
+  --text: #1b1f2a;
+  --muted: #5b6477; /* secondary text */
+  --paper: #f3f5f1; /* background  */
+  --line: #d3d9d0; /* border colour for the dropdown + legend  */
+  --serif: "Fraunces", Georgia, "Times New Roman", serif; /* headings */
+  --sans: "Instrument Sans", "Segoe UI", system-ui, sans-serif; /* body */
+}
+
+body {                                    
+  margin: 0;                              
+  font-family: var(--sans);              
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--paper); /* applies the background */
+}
+
+.page {                                   
+  display: grid;                         
+  grid-template-columns: minmax(300px, 1fr) 2fr;   /* story, then a wider map */
+  gap: 40px;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+h1, h2 {
+  font-family: var(--serif);
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+h1 { 
+  font-size: 38px;
+  margin-top: 0;
+}
+h2 { 
+  font-size: 24px;
+  margin-top: 36px;
+  padding-top: 14px;
+  border-top: 2px solid var(--accent); /* lines seperating sections */
+}
+
+.lede { 
+  font-family: var(--serif);
+  font-size: 19px;
+  line-height: 1.5;
+}
+#status { 
+  color: var(--muted);
+  font-size: 15px;
+}
+a { /* links */
+  color: var(--accent);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+/* borough filter */
+label[for="borough-filter"] {
+  display: block;
+  margin: 20px 0 6px;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--accent);
+}
+#borough-filter { /* the dropdown itself */
+  appearance: none;
+  width: 100%;
+  padding: 12px 44px 12px 14px;
+  font: 500 16px/1.2 var(--sans);
+  color: var(--text);
+  background-color: #fff;
+  background-image: linear-gradient(45deg, transparent 50%, var(--accent) 50%), 
+                    linear-gradient(135deg, var(--accent) 50%, transparent 50%);
+  background-position: calc(100% - 22px) 50%, calc(100% - 16px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--accent);
+  border-radius: 12px; 
+  cursor: pointer; /* changes the cursor to a hand pointer when hovering on the dropdown */
+}
+
+/* map*/
+#map { 
+  height: calc(100vh - 48px);          /* the map needs a height, or it is invisible */
+  min-height: 420px;
+  position: sticky;
+  top: 24px;
+  border-radius: 12px;
+  border: 3px solid var(--line);
+}
+
+@media (max-width: 800px) {
+  .page { grid-template-columns: 1fr;}
+  #map { height: 70vh; position: static; }
+}
+
+/* legend */
+.legend {
+  background: #fff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 3px solid var(--line);
+  line-height: 1.7;
+  font-size: 14px;
+}
+.legend span { /* the coloured dots */
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+}

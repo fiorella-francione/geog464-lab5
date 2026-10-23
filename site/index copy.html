@@ -1,0 +1,55 @@
+<!-- STRUCTURE: what is on the page-->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Off-Street Parking across the City of Montreal</title>
+
+  <!-- fonts: fraunces (headings) and instrument sans (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <main class="story">
+      <h1>Off-Street Parking across the City of Montreal</h1>
+      <p class="lede">One of Montreal's 2030 Climate Plan goals is to plant and maintain 500 000 new trees in an effort to combat urban heat islands. Part of this greening mission involves converting open-air parking lots into green areas.</p>
+
+      <p><strong>This map is for</strong> borough planners, to identify potential parking area candidates as a first step in the conversion process.</p>
+      <p><strong>What you can do here:</strong> filter between different boroughs under the City of Montreal municipality, click on any parking point to see its associated street location and hourly rate.</p>
+
+      <label for="borough-filter">Show borough:</label>
+      <select id="borough-filter">
+        <option value="all">All Boroughs</option>
+        <option value="Le Plateau-Mont-Royal">Le Plateau-Mont-Royal</option>
+        <option value="Outremont">Outremont</option>
+        <option value="Ville-Marie">Ville-Marie</option>
+        <option value="Rosemont-La Petite-Patrie">Rosemont-La Petite-Patrie</option>
+        <option value="Ahuntsic-Cartierville">Ahuntsic-Cartierville</option>
+        <option value="Côte-des-Neiges-Notre-Dame-de-Grâce">Côte-des-Neiges-Notre-Dame-de-Grâce</option>
+        <option value="Verdun">Verdun</option>
+        <option value="Le Sud-Ouest">Le Sud-Ouest</option>
+      </select>
+      <p id="status">Loading parking spaces...</p>
+
+      <section class="aside">
+        <h2>Not in this iteration</h2>
+        <p>Clustered points by lot. I chose to leave parking spaces that fell in the same parking lot as seperate because my data has no lot identifier and I plan to join them onto the grid from the urban heat island dataset.</p>
+        <h2>Where this comes from</h2>
+        <ul>
+          <li><a href="https://www.agencemobilitedurable.ca/fr/informations/donnees-ouvertes.html">Stationnements municipaux tarifés, sur rue et hors rue</a>, Agence de mobilité durable, Creative Commons CC-BY 4.0, accessed 2026-09-25</li>
+          <li><a href="https://open.canada.ca/data/en/dataset/9797a946-9da8-41ec-8815-f6b276dec7e9/resource/94a9f002-3c46-4a7f-99cc-db0a0e01f7bc">Administrative boundaries of the agglomeration of Montreal (NAD83/MTM zone 8)</a>, Government and Municipalities of Québec, Creative Commons CC-BY 4.0, accessed 2026-10-08</li>
+        </ul>
+      </section>
+    </main>
+    <div id="map"></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
