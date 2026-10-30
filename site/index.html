@@ -22,6 +22,13 @@
       <p><strong>This map is for</strong> borough planners, to identify potential parking area candidates as a first step in the conversion process.</p>
       <p><strong>What you can do here:</strong> filter between different boroughs under the City of Montreal municipality, click on any parking point to see its associated street location and hourly rate.</p>
 
+      <form id="borough-search">
+        <label for="borough-search-input">Search borough:</label>
+        <input id="borough-search-input" type="search" placeholder="Enter a borough name" />
+        <button type="submit">Search</button>
+        <div id="borough-suggestions" class="borough-suggestions" role="group" aria-label="Borough suggestions" hidden></div>
+      </form>
+
       <label for="borough-filter">Show borough:</label>
       <select id="borough-filter">
         <option value="all">All Boroughs</option>
