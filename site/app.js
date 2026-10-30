@@ -136,7 +136,18 @@ Promise.all([
     }
   }).addTo(map);
 
+  // A3 search and filter for boroughs
   const boroughFilter = document.getElementById('borough-filter');
+  const boroughSearch = document.getElementById('borough-search');
+  const boroughSearchInput = document.getElementById('borough-search-input');
+  const boroughSuggestions = document.getElementById('borough-suggestions');
+  const boroughNames = Array.from(new Set(parkingData.features.map(function (feature) {
+    return feature.properties.NOM;
+  })));
+  function normalizeBorough(name) {
+    return name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
   const parkingLayer = L.geoJSON(null, {
     pane: 'parkingPane',
     pointToLayer: function (feature, latlng) {
@@ -164,8 +175,8 @@ Promise.all([
     }
   }).addTo(map);
 
-  function showFeatures() {
-    const selectedBorough = boroughFilter.value;
+  function showFeatures(borough) {
+    const selectedBorough = borough || boroughFilter.value;
     const filteredFeatures = selectedBorough === 'all'
       ? parkingData.features
       : parkingData.features.filter(function (feature) {
@@ -182,6 +193,54 @@ Promise.all([
     document.getElementById('status').textContent =
       filteredFeatures.length + ' parking spaces shown in ' + boroughLabel;
   }
+  function selectBorough(borough) {
+    boroughFilter.value = borough;
+    showFeatures(borough);
+    map.fitBounds(parkingLayer.getBounds(), { padding: [20, 20], maxZoom: 15 });
+    boroughSuggestions.hidden = true;
+    boroughSuggestions.replaceChildren();
+  }
+
+  boroughSearchInput.addEventListener('input', function () {
+    const searchName = normalizeBorough(boroughSearchInput.value);
+    boroughSuggestions.replaceChildren();
+
+    if (!searchName) {
+      boroughSuggestions.hidden = true;
+      return;
+    }
+
+    const matches = boroughNames.filter(function (name) {
+      return normalizeBorough(name).startsWith(searchName);
+    });
+
+    matches.forEach(function (name) {
+      const option = document.createElement('button');
+      option.type = 'button';
+      option.textContent = name;
+      option.addEventListener('click', function () {
+        boroughSearchInput.value = name;
+        selectBorough(name);
+      });
+      boroughSuggestions.appendChild(option);
+    });
+    boroughSuggestions.hidden = matches.length === 0;
+  });
+
+  boroughSearch.addEventListener('submit', function (event) {
+    event.preventDefault();
+    const searchName = normalizeBorough(boroughSearchInput.value);
+    const matchingBorough = boroughNames.find(function (name) {
+      return normalizeBorough(name) === searchName;
+    });
+
+    if (!matchingBorough) {
+      document.getElementById('status').textContent = 'Borough not found, try again';
+      return;
+    }
+
+    selectBorough(matchingBorough);
+  });
 
   boroughFilter.addEventListener('change', showFeatures);
   showFeatures();
