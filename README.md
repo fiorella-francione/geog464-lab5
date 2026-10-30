@@ -34,7 +34,7 @@ Licence: Attribution (CC-BY 4.0)
 Date accessed: 2026-10-23
 
 
-AI disclosure: Blue lane
+## AI disclosure: Blue lane
 I used the format from Lab 3 to load in my data, export the cleaned rows into a GeoJSON and the check cell. To help with the section on using geopandas to join my parking lot data with their respective boroughs, I used the built-in Copilot chat with the Auto "Balance" model. The method I used for asking the AI was first define my dataset (boroughs.geojson) and join it with df_h (dataframe with only off-street parking rows). I also specified to the AI not to make changes to my notebook and to also include comments to each line of code so I could understand what each line did. It suggested I load the geopandas extension first, create points from my df_h and check that both datasets were in the same coordinate system. Then, it wrote the line for the join but it also wrote a line to save this join into a new GeoJSON. I removed this line because I wanted to save it to the same GeoJSON file I had created earlier. To verify the join, I counted the number of points that did not match a borough and it came up as 0. As for the presentation and behavior of the website, I asked AI to help load in a font family I found online. It also suggested a few details to make the website stand out inlcuding adding a border to the map and changing the background color, which I accepted once I knew how it worked. Some changes had to be made throughout app.js, html and style.css for the legend to show up properly. I tweaked the dimensions of the map size, text, legend to my own liking.
 
 After the demo:
@@ -46,13 +46,14 @@ Darker square have a higher surface temperature (range of 29.7-35.1 celsius).
 
 ## A3 feature: 
 For A3 I will add a search box that matches a borough the reader types, so that my reader can immeditaley get zoomed into a specific borough instead of clicking on it.
-It has depth because it responds to what the person types in and zooms into the borough.
+It has depth because it responds to what the person types in and zooms into the borough and displays how many parking points are 
+in that borough.
 I will know it works when I can type a borough, ignoring case and accents, and the map zooms into the correct area.
-My edge case is an inputted borough name that does not match my data shows a message that it was not found.
+My edge case is an inputted borough name that does not match my data shows a message that it was not found and asks to search for another borough.
 
-1. I type a borough like "Outremont".
- Expected: Ooutremont, and zooms into it.
-Test 2. I type "OUTREMONT".
- Expected: Still zooms into Outremont.
+Test 1. I type a borough like "Outremont".
+ Expected: Outremont, zooms into it and displays the number of parking spaces.
+Test 2. I type a different borough, "Verdun".
+ Expected: Zooms into Verdun, shows the updated number of parking spaces in that borough (not the one from the previously typed borough).
 Test 3. I type "xyz".
- Expected: "Borough not found" message.
+ Expected: "Borough not found, try again" message.
