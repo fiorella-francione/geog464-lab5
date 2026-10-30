@@ -45,15 +45,17 @@ points over it.
 Darker square have a higher surface temperature (range of 29.7-35.1 celsius).
 
 ## A3 feature: 
-For A3 I will add a search box that matches a borough the reader types, so that my reader can immeditaley get zoomed into a specific borough instead of clicking on it.
-It has depth because it responds to what the person types in and zooms into the borough and displays how many parking points are 
-in that borough.
+For A3 I will add a search box that matches a borough the reader types, so that my reader can immediately get zoomed into a specific borough instead of clicking on it.
+It has depth because it responds to what the person types in and zooms into the borough and displays how many parking points are in that borough. The search will also display a live suggestion of the borough being typed in.
 I will know it works when I can type a borough, ignoring case and accents, and the map zooms into the correct area.
 My edge case is an inputted borough name that does not match my data shows a message that it was not found and asks to search for another borough.
 
 Test 1. I type a borough like "Outremont".
  Expected: Outremont, zooms into it and displays the number of parking spaces.
+ -> Passed
 Test 2. I type a different borough, "Verdun".
  Expected: Zooms into Verdun, shows the updated number of parking spaces in that borough (not the one from the previously typed borough).
+ -> Passed
 Test 3. I type "xyz".
  Expected: "Borough not found, try again" message.
+ -> Passed
