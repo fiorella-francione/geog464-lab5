@@ -20,7 +20,7 @@
       <p class="lede">One of Montreal's 2030 Climate Plan goals is to plant and maintain 500 000 new trees in an effort to combat urban heat islands. Part of this greening mission involves converting open-air parking lots into green areas.</p>
 
       <p><strong>This map is for</strong> borough planners, to identify potential parking area candidates as a first step in the conversion process.</p>
-      <p><strong>What you can do here:</strong> filter between different boroughs under the City of Montreal municipality, click on any parking point to see its associated street location and hourly rate.</p>
+      <p><strong>What you can do here:</strong> filter between different boroughs under the City of Montreal municipality, then click a clustered parking location to see how many source points it combines, an example street and hourly rate, and its average heat temperature.</p>
 
       <form id="borough-search">
         <label for="borough-search-input">Search borough:</label>
@@ -41,11 +41,11 @@
         <option value="Verdun">Verdun</option>
         <option value="Le Sud-Ouest">Le Sud-Ouest</option>
       </select>
-      <p id="status">Loading parking spaces...</p>
+      <p id="status">Loading clustered parking locations...</p>
 
       <section class="aside">
-        <h2>Not in this iteration</h2>
-        <p>Clustered points by lot. I chose to leave parking spaces that fell in the same parking lot as seperate because my data has no lot identifier and I plan to join them onto the grid from the urban heat island dataset.</p>
+        <h2>How locations are grouped</h2>
+        <p>Parking points within 30 metres are grouped using DBSCAN, separately by borough. Each marker represents one cluster; its popup reports the number of source points and example parking details. The heat grid still counts the original parking points.</p>
         <h2>Where this comes from</h2>
         <ul>
           <li><a href="https://www.agencemobilitedurable.ca/fr/informations/donnees-ouvertes.html">Stationnements municipaux tarifés, sur rue et hors rue</a>, Agence de mobilité durable, Creative Commons CC-BY 4.0, accessed 2026-09-25</li>
