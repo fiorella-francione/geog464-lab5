@@ -87,7 +87,7 @@ function addTemperatureLegend() {
 }
 
 const gridFile = '../data/borough_heat_grid.geojson';
-const parkingFile = '../data/parking_boroughs_heat.geojson';
+const parkingFile = '../data/parking_cluster.geojson';
 
 Promise.all([
   fetch(gridFile).then(function (response) {
@@ -95,7 +95,7 @@ Promise.all([
     return response.json();
   }),
   fetch(parkingFile).then(function (response) {
-    if (!response.ok) { throw new Error('HTTP ' + response.status + ' loading parking_boroughs_heat.geojson'); }
+    if (!response.ok) { throw new Error('HTTP ' + response.status + ' loading parking_cluster.geojson'); }
     return response.json();
   })
 ]).then(function (datasets) {
@@ -167,8 +167,9 @@ Promise.all([
         ? temperature.toFixed(1) + ' °C'
         : 'Not available';
       layer.bindPopup(
-        'Street: ' + p.sNomRue + '<br>' +
-        'Hourly rate: ' + p.nTarifHoraire + '&cent;<br>' +
+        'Parking points grouped: ' + p.n_points + '<br>' +
+        'Example street: ' + p.sNomRue + '<br>' +
+        'Example hourly rate: ' + p.nTarifHoraire + '&cent;<br>' +
         'Heat category: ' + getHeatLabel(p.ClassQual) + '<br>' +
         'Average temperature: ' + temperatureLabel
       );
@@ -191,12 +192,15 @@ Promise.all([
 
     const boroughLabel = selectedBorough === 'all' ? 'all boroughs' : selectedBorough;
     document.getElementById('status').textContent =
-      filteredFeatures.length + ' parking spaces shown in ' + boroughLabel;
+      filteredFeatures.length + ' clustered parking locations shown in ' + boroughLabel;
   }
   function selectBorough(borough) {
     boroughFilter.value = borough;
     showFeatures(borough);
-    map.fitBounds(parkingLayer.getBounds(), { padding: [20, 20], maxZoom: 15 });
+    const bounds = parkingLayer.getBounds();
+    if (bounds.isValid()) {
+      map.fitBounds(bounds, { padding: [20, 20], maxZoom: 15 });
+    }
     boroughSuggestions.hidden = true;
     boroughSuggestions.replaceChildren();
   }
@@ -242,18 +246,20 @@ Promise.all([
     selectBorough(matchingBorough);
   });
 
-  boroughFilter.addEventListener('change', showFeatures);
+  boroughFilter.addEventListener('change', function () {
+    selectBorough(boroughFilter.value);
+  });
   showFeatures();
 
   L.control.layers(
     { 'Streets': streets },
-    { 'Urban heat grid (mean °C)': gridLayer, 'Parking points': parkingLayer },
+    { 'Urban heat grid (mean °C)': gridLayer, 'Clustered parking locations': parkingLayer },
     { collapsed: false }
   ).addTo(map);
 
   addTemperatureLegend();
 }).catch(function (err) {
   document.getElementById('status').textContent =
-    'Could not load the grid or parking points. Open the console (F12) for details.';
+    'Could not load the grid or clustered parking locations. Open the console (F12) for details.';
   console.error(err);
 });
