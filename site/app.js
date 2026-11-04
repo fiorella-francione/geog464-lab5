@@ -169,11 +169,11 @@ Promise.all([
         ? temperature.toFixed(1) + ' °C'
         : 'Not available';
       layer.bindPopup(
+        'Street Name: ' + p.sNomRue + '<br>' +
         'Parking points grouped: ' + p.n_points + '<br>' +
-        'Example street: ' + p.sNomRue + '<br>' +
-        'Example hourly rate: ' + p.nTarifHoraire + '&cent;<br>' +
         'Maximum heat class: ' + p.ClassesNB_ + ' — ' + getHeatLabel(p.ClassQual) + '<br>' +
-        'Average temperature: ' + temperatureLabel
+        'Average temperature: ' + temperatureLabel + '<br>' +
+        'Hourly rate: ' + p.nTarifHoraire + '&cent;<br>' 
       );
     }
   }).addTo(map);
@@ -363,7 +363,7 @@ Promise.all([
   showFeatures();
 
   L.control.layers(
-    { 'Streets': streets },
+    { 'Click to toggle layers': streets },
     { 'Urban heat grid (mean °C)': gridLayer, 'Clustered parking locations': parkingLayer },
     { collapsed: false }
   ).addTo(map);
