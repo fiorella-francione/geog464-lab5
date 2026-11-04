@@ -86,6 +86,69 @@ label[for="borough-filter"] {
   cursor: pointer; /* changes the cursor to a hand pointer when hovering on the dropdown */
 }
 
+#minimum-heat-class {
+  appearance: none;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--text);
+  font: 500 15px/1.2 var(--sans);
+}
+.shortlist h2 {
+  margin-bottom: 12px;
+}
+.shortlist > label {
+  display: block;
+  margin: 0 0 6px;
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 600;
+}
+.shortlist-note {
+  margin: 10px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.candidate-list {
+  max-height: 370px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.candidate-list li + li {
+  margin-top: 8px;
+}
+.candidate-row {
+  display: grid;
+  width: 100%;
+  gap: 3px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.candidate-row:hover,
+.candidate-row:focus-visible {
+  border-color: var(--accent);
+  background: #e9eee9;
+}
+.candidate-address {
+  color: var(--accent);
+  font-weight: 600;
+}
+.candidate-details {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
 .borough-suggestions {
   display: grid;
   margin-top: 4px;
