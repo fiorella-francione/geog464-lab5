@@ -43,9 +43,29 @@
       </select>
       <p id="status">Loading clustered parking locations...</p>
 
+      <section class="shortlist" aria-labelledby="shortlist-title">
+        <h2 id="shortlist-title">Hottest candidates to investigate</h2>
+        <label for="minimum-heat-class">Minimum heat class:</label>
+        <select id="minimum-heat-class">
+          <option value="all">All classes</option>
+          <option value="4">4+ (at-risk or hotter)</option>
+          <option value="5">5 only (heat island)</option>
+        </select>
+        <p id="shortlist-note" class="shortlist-note">
+          Choose a borough to rank locations by average satellite surface temperature.
+          The comparison is against the average of clustered locations in that borough.
+          The class filter uses the highest heat class among a location's source points.
+        </p>
+        <ol id="candidate-list" class="candidate-list" aria-live="polite">
+          <li>Loading candidates...</li>
+        </ol>
+      </section>
+
       <section class="aside">
         <h2>How locations are grouped</h2>
         <p>Parking points within 30 metres are grouped using DBSCAN, separately by borough. Each marker represents one cluster; its popup reports the number of source points and example parking details. The heat grid still counts the original parking points.</p>
+        <h2>How to interpret the shortlist</h2>
+        <p>Rankings use satellite surface temperatures from one day, 21 August 2025. The data does not identify lot size or ownership, so these are candidates to investigate—not recommendations or a determination that a lot should be converted.</p>
         <h2>Where this comes from</h2>
         <ul>
           <li><a href="https://www.agencemobilitedurable.ca/fr/informations/donnees-ouvertes.html">Stationnements municipaux tarifés, sur rue et hors rue</a>, Agence de mobilité durable, Creative Commons CC-BY 4.0, accessed 2026-09-25</li>
