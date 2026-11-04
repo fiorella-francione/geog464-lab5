@@ -141,6 +141,8 @@ Promise.all([
   const boroughSearch = document.getElementById('borough-search');
   const boroughSearchInput = document.getElementById('borough-search-input');
   const boroughSuggestions = document.getElementById('borough-suggestions');
+  const minimumHeatClass = document.getElementById('minimum-heat-class');
+  const candidateList = document.getElementById('candidate-list');
   const boroughNames = Array.from(new Set(parkingData.features.map(function (feature) {
     return feature.properties.NOM;
   })));
@@ -170,11 +172,115 @@ Promise.all([
         'Parking points grouped: ' + p.n_points + '<br>' +
         'Example street: ' + p.sNomRue + '<br>' +
         'Example hourly rate: ' + p.nTarifHoraire + '&cent;<br>' +
-        'Heat category: ' + getHeatLabel(p.ClassQual) + '<br>' +
+        'Maximum heat class: ' + p.ClassesNB_ + ' — ' + getHeatLabel(p.ClassQual) + '<br>' +
         'Average temperature: ' + temperatureLabel
       );
     }
   }).addTo(map);
+
+  function renderShortlist(borough) {
+    candidateList.replaceChildren();
+
+    if (borough === 'all') {
+      candidateList.appendChild(document.createElement('li'))
+        .textContent = 'Choose a borough to see its hottest candidates.';
+      return;
+    }
+
+    const boroughFeatures = parkingData.features.filter(function (feature) {
+      return feature.properties.NOM === borough;
+    });
+    const temperatures = boroughFeatures
+      .map(function (feature) { return parseTemperature(feature.properties.TempMoyVF); })
+      .filter(Number.isFinite);
+    if (temperatures.length === 0) {
+      candidateList.appendChild(document.createElement('li'))
+        .textContent = 'No temperature data is available for this borough.';
+      return;
+    }
+
+    if (boroughFeatures.some(function (feature) {
+      return !Number.isFinite(parseTemperature(feature.properties.ClassesNB_));
+    })) {
+      candidateList.appendChild(document.createElement('li'))
+        .textContent = 'Heat-class data is missing. Rerun the notebook heat join and clustering export.';
+      return;
+    }
+
+    const boroughAverage = temperatures.reduce(function (sum, value) {
+      return sum + value;
+    }, 0) / temperatures.length;
+    const minimumClass = minimumHeatClass.value === 'all'
+      ? null
+      : Number(minimumHeatClass.value);
+    const candidates = boroughFeatures
+      .filter(function (feature) {
+        return minimumClass === null ||
+          Number(feature.properties.ClassesNB_) >= minimumClass;
+      })
+      .filter(function (feature) {
+        return Number.isFinite(parseTemperature(feature.properties.TempMoyVF));
+      })
+      .sort(function (a, b) {
+        return Number(b.properties.TempMoyVF) - Number(a.properties.TempMoyVF);
+      })
+      .slice(0, 10);
+
+    if (candidates.length === 0) {
+      candidateList.appendChild(document.createElement('li'))
+        .textContent = 'No locations meet this minimum heat class in ' + borough + '.';
+      return;
+    }
+
+    candidates.forEach(function (feature) {
+      const properties = feature.properties;
+      const temperature = Number(properties.TempMoyVF);
+      const difference = temperature - boroughAverage;
+      const roundedDifference = Math.round(difference * 10) / 10;
+      const differenceLabel = (roundedDifference >= 0 ? '+' : '−') +
+        Math.abs(roundedDifference).toFixed(1) + ' °C vs borough candidate average';
+      const hourlyRate = parseTemperature(properties.nTarifHoraire);
+      const rateLabel = Number.isFinite(hourlyRate)
+        ? '$' + (hourlyRate / 100).toFixed(2) + '/hour'
+        : 'Rate unavailable';
+      const item = document.createElement('li');
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'candidate-row';
+      button.setAttribute(
+        'aria-label',
+        properties.sNomRue + ', ' + properties.n_points + ' parking points, ' +
+        temperature.toFixed(1) + ' degrees Celsius, ' + differenceLabel + ', ' + rateLabel
+      );
+
+      const address = document.createElement('span');
+      address.className = 'candidate-address';
+      address.textContent = properties.sNomRue || 'Address unavailable';
+      const details = document.createElement('span');
+      details.className = 'candidate-details';
+      details.textContent = properties.n_points + ' parking points · ' +
+        temperature.toFixed(1) + ' °C · ' + differenceLabel + ' · ' + rateLabel;
+      button.append(address, details);
+
+      button.addEventListener('click', function () {
+        let marker;
+        parkingLayer.eachLayer(function (layer) {
+          const markerProperties = layer.feature.properties;
+          if (markerProperties.NOM === properties.NOM &&
+              markerProperties.lot_id === properties.lot_id) {
+            marker = layer;
+          }
+        });
+        if (marker) {
+          map.setView(marker.getLatLng(), Math.max(map.getZoom(), 16));
+          marker.openPopup();
+        }
+      });
+
+      item.appendChild(button);
+      candidateList.appendChild(item);
+    });
+  }
 
   function showFeatures(borough) {
     const selectedBorough = borough || boroughFilter.value;
@@ -193,6 +299,7 @@ Promise.all([
     const boroughLabel = selectedBorough === 'all' ? 'all boroughs' : selectedBorough;
     document.getElementById('status').textContent =
       filteredFeatures.length + ' clustered parking locations shown in ' + boroughLabel;
+    renderShortlist(selectedBorough);
   }
   function selectBorough(borough) {
     boroughFilter.value = borough;
@@ -248,6 +355,9 @@ Promise.all([
 
   boroughFilter.addEventListener('change', function () {
     selectBorough(boroughFilter.value);
+  });
+  minimumHeatClass.addEventListener('change', function () {
+    renderShortlist(boroughFilter.value);
   });
   showFeatures();
 
