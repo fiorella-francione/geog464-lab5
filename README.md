@@ -59,3 +59,14 @@ Test 2. I type a different borough, "Verdun".
 Test 3. I type "xyz".
  Expected: "Borough not found, try again" message.
  -> Passed
+
+ ## Pre-flight report (Lab 7)
+| Check | Result | What I did |
+| 1. Cold start | failed, since I made changes to my data and created parking_cluster.geojson, the github page was not loading the data  | I used git commit to add the geojson file and the page loads properly|
+| 2. Read every label | pass | nothing shows up as undefined, no fix needed |
+| 3. Ask twice | pass |  the first response goes away after searching a second borough, no fix needed |
+| 4. The edge | pass | typing "xyz" to find a borough shows a message "Borough not found, try again. no fix needed |
+| 5. The data does not come | pass | when parking_cluster.geojson is blocked, this message shows up: "Could not load the grid or clustered parking locations. Open the console (F12) for details." |
+| 6. On a phone (size view and my phone) | pass | the page loads properly on a phone, the search feature can still be used |
+| 7. Mouse in my pocket | pass | all points and the search box work as a button |
+| 8. Accessibility audit | pass | accessibility score is 100 |
