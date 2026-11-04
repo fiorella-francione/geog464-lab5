@@ -232,7 +232,7 @@ Promise.all([
       return;
     }
 
-    candidates.forEach(function (feature) {
+    candidates.forEach(function (feature, index) {
       const properties = feature.properties;
       const temperature = Number(properties.TempMoyVF);
       const difference = temperature - boroughAverage;
@@ -249,13 +249,14 @@ Promise.all([
       button.className = 'candidate-row';
       button.setAttribute(
         'aria-label',
-        properties.sNomRue + ', ' + properties.n_points + ' parking points, ' +
+        'Rank ' + (index + 1) + ', ' + properties.sNomRue + ', ' +
+        properties.n_points + ' parking points, ' +
         temperature.toFixed(1) + ' degrees Celsius, ' + differenceLabel + ', ' + rateLabel
       );
 
       const address = document.createElement('span');
       address.className = 'candidate-address';
-      address.textContent = properties.sNomRue || 'Address unavailable';
+      address.textContent = (index + 1) + '. ' + (properties.sNomRue || 'Address unavailable');
       const details = document.createElement('span');
       details.className = 'candidate-details';
       details.textContent = properties.n_points + ' parking points · ' +
