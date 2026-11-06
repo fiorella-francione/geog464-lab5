@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Walking tour (GEOG 464 template)</title>
+<!--
+  GEOG 464 walking-tour template. One file, no libraries, works on a phone.
+  TO MAKE YOUR TOUR: change only TITLE, INTRO and the STOPS list in the script below.
+  Everything else (big buttons, read aloud, GPS distance, map links) already works.
+  GPS needs the page to be served over https (GitHub Pages is fine).
+  © 2026 Luke Russell. All rights reserved. Students may copy and adapt it for GEOG 464.
+-->
+<style>
+  :root { --navy:#1F2D5A; --gold:#DCBD23; --cream:#FBEBD0; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: Arial, Helvetica, sans-serif; background:var(--navy); color:#fff; line-height:1.5; }
+  header { padding:18px 18px 8px; }
+  h1 { margin:0 0 6px; font-size:26px; }
+  #language { flex:0 0 auto; min-height:40px; margin-bottom:10px; font-size:15px; }
+  #intro { margin:0; opacity:.9; }
+  main { padding:12px 18px 120px; }
+  .card { background:var(--cream); color:var(--navy); border-radius:14px; padding:18px; }
+  .count { font-size:14px; font-weight:bold; letter-spacing:.05em; text-transform:uppercase; color:#6b5a12; }
+  h2 { margin:6px 0 10px; font-size:24px; }
+  .text { font-size:20px; margin:0 0 14px; }
+  .dirs { font-size:19px; border-left:6px solid var(--gold); padding:8px 12px; background:#fff; border-radius:8px; }
+  .dirs b { display:block; font-size:14px; text-transform:uppercase; letter-spacing:.05em; }
+  .row { display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
+  button, a.btn { flex:1; min-height:52px; font-size:18px; font-weight:bold; border:0; border-radius:10px; padding:10px; cursor:pointer;
+                  background:var(--navy); color:#fff; text-align:center; text-decoration:none; display:flex; align-items:center; justify-content:center; }
+  button.alt, a.alt { background:#fff; color:var(--navy); border:2px solid var(--navy); }
+  button:focus-visible, a.btn:focus-visible { outline:4px solid var(--gold); outline-offset:2px; }
+  label { display:flex; gap:10px; align-items:center; font-size:17px; margin-top:12px; }
+  input[type=checkbox] { width:24px; height:24px; }
+  #gps { font-size:17px; margin-top:10px; min-height:1.5em; }
+  .tour-layout { display:grid; grid-template-columns:minmax(0, 1fr) minmax(280px, 1fr); gap:14px; align-items:start; }
+  .map-panel { position:sticky; top:12px; overflow:hidden; border-radius:14px; background:var(--cream); color:var(--navy); }
+  .map-panel h2 { margin:0; padding:10px 14px; font-size:18px; }
+  .map-panel iframe { display:block; width:100%; height:380px; border:0; }
+  .walk-dashboard { padding:0 14px 14px; }
+  .walk-dashboard h3 { margin:8px 0 4px; font-size:18px; }
+  .walk-dashboard p { margin:0 0 8px; font-size:13px; }
+  .walk-dashboard table { width:100%; border-collapse:collapse; font-size:14px; }
+  .walk-dashboard th, .walk-dashboard td { padding:6px 4px; text-align:left; border-bottom:1px solid #d5cda9; }
+  .walk-dashboard th:last-child, .walk-dashboard td:last-child { text-align:right; white-space:nowrap; }
+  .walk-dashboard tr[aria-current="step"] { font-weight:bold; background:#fff; }
+  .safety { margin-top:16px; font-size:15px; opacity:.9; }
+  nav { position:fixed; left:0; right:0; bottom:0; display:flex; gap:10px; padding:12px 18px; background:var(--navy); border-top:3px solid var(--gold); }
+  @media (max-width:700px) {
+    .tour-layout { grid-template-columns:1fr; }
+    .map-panel { position:static; }
+    .map-panel iframe { height:240px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <button id="language" class="alt" type="button" aria-label="Passer en français">Français</button>
+  <h1 id="title"></h1>
+  <p id="intro"></p>
+</header>
+<main>
+  <div class="tour-layout">
+  <section class="card" aria-live="polite">
+    <div class="count" id="count"></div>
+    <h2 id="name"></h2>
+    <p class="text" id="text"></p>
+    <div class="dirs"><b id="nextlabel">Next: how to get there</b><span id="dirs"></span></div>
+    <div class="row">
+      <button id="speak" type="button">Read aloud</button>
+      <a id="maplink" class="btn alt" target="_blank" rel="noopener">Open in Maps</a>
+    </div>
+    <label><input type="checkbox" id="readDirs" checked> <span id="readlabel">Read the directions too (phone can stay in your pocket)</span></label>
+    <div class="row"><button id="where" class="alt" type="button">How far is this stop?</button></div>
+    <p id="gps"></p>
+  </section>
+  <section class="map-panel" id="map-panel" aria-label="Map for the current stop">
+    <h2 id="maptitle">Map: current stop</h2>
+    <iframe id="tourmap" title="OpenStreetMap showing the current tour stop" loading="eager" referrerpolicy="no-referrer"></iframe>
+    <section class="walk-dashboard" aria-labelledby="walkheading">
+      <h3 id="walkheading">Walking-time dashboard</h3>
+      <p id="walknote">Approximate estimates from the previous stop; cumulative time starts at the Hall. Based on stop coordinates, a 4.5 km/h pace, and a 30% street-route allowance. Actual routes and pace vary.</p>
+      <table>
+        <thead><tr><th id="pointhead" scope="col">Point</th><th id="leghead" scope="col">Leg</th><th id="totalhead" scope="col">Total</th></tr></thead>
+        <tbody id="walktimes"></tbody>
+      </table>
+    </section>
+  </section>
+  </div>
+  <p class="safety" id="safety">Signs, signals and your own judgment come first. Stop on the sidewalk to read; phone down while you cross.</p>
+</main>
+<nav>
+  <button id="prev" class="alt" type="button">Back</button>
+  <button id="next" type="button">Next stop</button>
+</nav>
+
+<script>
+// ===== CHANGE ONLY THIS PART =====
+// lat and lon are optional: they turn on "Open in Maps" and "How far is this stop?".
+// Facts in "text" must be true: check each one before anyone walks the tour.
+const STOPS = [
+  { name: "Start: the Hall Building", nameFr: "Départ : édifice Hall", lat: 45.4973133, lon: -73.5788762,
+    text: "The Hall Building is listed at 1455 Boulevard De Maisonneuve Ouest. This walk checks two nearby quick-service listings rather than claiming either is the cheapest.",
+    textFr: "L’édifice Hall est répertorié au 1455, boulevard De Maisonneuve Ouest. Cette promenade passe devant deux établissements de restauration rapide à proximité, sans prétendre que l’un d’eux est le moins cher.",
+    directions: "From the Hall Building, head east on de Maisonneuve toward Peel, then continue to the Shawarmaz map pin. CHECK the exact sidewalk route and storefront before setting off.",
+    directionsFr: "Depuis l’édifice Hall, marchez vers l’est sur de Maisonneuve en direction de Peel, puis continuez jusqu’au repère Shawarmaz. À VÉRIFIER : le trajet exact sur les trottoirs et l’emplacement de la vitrine avant de partir." },
+  { name: "Shawarmaz (Rue Sainte-Catherine Ouest)", nameFr: "Shawarmaz (rue Sainte-Catherine Ouest)", lat: 45.4973872, lon: -73.5753107,
+    text: "OpenStreetMap lists Shawarmaz here as a fast-food place on Rue Sainte-Catherine Ouest. CHECK that it is still operating at this pin and compare current menu prices with your budget.",
+    textFr: "OpenStreetMap répertorie Shawarmaz à cet emplacement comme établissement de restauration rapide, rue Sainte-Catherine Ouest. À VÉRIFIER : l’établissement est-il toujours à cette adresse, et ses prix actuels correspondent-ils à votre budget?",
+    directions: "Head east toward Peel, then continue northeast toward the Basha map pin on Rue Sainte-Catherine Ouest. CHECK the crossings and exact storefront location on your map.",
+    directionsFr: "Marchez vers l’est en direction de Peel, puis vers le nord-est jusqu’au repère Basha, rue Sainte-Catherine Ouest. À VÉRIFIER sur votre carte : les traverses et l’emplacement exact de la vitrine." },
+  { name: "Basha (Rue Sainte-Catherine Ouest)", nameFr: "Basha (rue Sainte-Catherine Ouest)", lat: 45.4986841, lon: -73.5740276,
+    text: "OpenStreetMap lists Basha here as a fast-food place on Rue Sainte-Catherine Ouest. CHECK that it is still operating at this pin and compare current menu prices with your budget.",
+    textFr: "OpenStreetMap répertorie Basha à cet emplacement comme établissement de restauration rapide, rue Sainte-Catherine Ouest. À VÉRIFIER : l’établissement est-il toujours à cette adresse, et ses prix actuels correspondent-ils à votre budget?",
+    directions: "Walk southwest toward Peel and de Maisonneuve, then continue west to the Hall Building at Guy. CHECK the safest pedestrian route and crossings as you go.",
+    directionsFr: "Marchez vers le sud-ouest en direction de Peel et de Maisonneuve, puis vers l’ouest jusqu’à l’édifice Hall, près de Guy. À VÉRIFIER pendant le trajet : l’itinéraire piéton le plus sûr et les traverses." },
+  { name: "Back at the Hall Building", nameFr: "Retour à l’édifice Hall", lat: 45.4973133, lon: -73.5788762,
+    text: "You are back at the Hall Building, where the walk began. CHECK restaurant opening status and prices directly before making a future visit.",
+    textFr: "Vous êtes de retour à l’édifice Hall, point de départ de la promenade. À VÉRIFIER directement avant une prochaine visite : les heures d’ouverture et les prix des restaurants.",
+    directions: "You are here.",
+    directionsFr: "Vous êtes arrivé." },
+];
+// ===== END OF THE PART TO CHANGE =====
+
+const UI = {
+  en: {
+    title: "Budget check: quick eats near Concordia",
+    intro: "A short walk from the Hall Building to two nearby fast-food listings. CHECK current opening status and menu prices before relying on either stop.",
+    language: "Français", languageLabel: "Passer en français",
+    nextLabel: "Next: how to get there", speak: "Read aloud", openMap: "Open in Maps",
+    readDirections: "Read the directions too (phone can stay in your pocket)",
+    howFar: "How far is this stop?", mapLabel: "Map: ", mapAria: "Map for the current stop",
+    mapTitle: "OpenStreetMap showing the current tour stop",
+    dashboard: "Walking-time dashboard",
+    walkNote: "Approximate estimates from the previous stop; cumulative time starts at the Hall. Based on stop coordinates, a 4.5 km/h pace, and a 30% street-route allowance. Actual routes and pace vary.",
+    point: "Point", leg: "Leg", total: "Total", start: "Start", minutes: "min",
+    safety: "Signs, signals and your own judgment come first. Stop on the sidewalk to read; phone down while you cross.",
+    back: "Back", next: "Next stop", finished: "Finished",
+    count: (current, totalStops) => "Stop " + current + " of " + totalStops,
+    noSpeech: "This browser cannot read aloud. The text is all on the screen.",
+    needsHttps: "Location needs the https address (GitHub Pages). The directions above still work.",
+    finding: "Finding you...",
+    distance: (metresAway) => "About " + metresAway + " m away in a straight line (GPS can be off by 20 m or more between tall buildings).",
+    noLocation: "Could not get your location. Follow the directions above."
+  },
+  fr: {
+    title: "Petit budget : repas rapides près de Concordia",
+    intro: "Courte promenade de l’édifice Hall à deux établissements de restauration rapide répertoriés à proximité. À VÉRIFIER : les heures d’ouverture et les prix actuels avant de vous y fier.",
+    language: "English", languageLabel: "Switch to English",
+    nextLabel: "Ensuite : comment s’y rendre", speak: "Lire à voix haute", openMap: "Ouvrir la carte",
+    readDirections: "Lire aussi les indications (gardez le téléphone dans votre poche)",
+    howFar: "À quelle distance suis-je de cet arrêt?", mapLabel: "Carte : ", mapAria: "Carte de l’arrêt actuel",
+    mapTitle: "OpenStreetMap montrant l’arrêt actuel",
+    dashboard: "Durée estimée de marche",
+    walkNote: "Estimations approximatives depuis l’arrêt précédent; le temps cumulé commence à l’édifice Hall. Calculées à partir des coordonnées, à 4,5 km/h avec une majoration de 30 % pour le trajet sur rue. Le trajet réel et l’allure peuvent varier.",
+    point: "Point", leg: "Étape", total: "Cumul", start: "Départ", minutes: "min",
+    safety: "Respectez d’abord la signalisation et votre jugement. Arrêtez-vous sur le trottoir pour lire; rangez votre téléphone en traversant.",
+    back: "Précédent", next: "Arrêt suivant", finished: "Terminé",
+    count: (current, totalStops) => "Arrêt " + current + " sur " + totalStops,
+    noSpeech: "Ce navigateur ne peut pas lire le texte à voix haute. Tout le texte est affiché à l’écran.",
+    needsHttps: "La géolocalisation nécessite une adresse https (GitHub Pages). Les indications ci-dessus restent disponibles.",
+    finding: "Localisation en cours...",
+    distance: (metresAway) => "À environ " + metresAway + " m à vol d’oiseau (le GPS peut avoir une marge d’erreur de 20 m ou plus entre les grands immeubles).",
+    noLocation: "Impossible d’obtenir votre position. Suivez les indications ci-dessus."
+  }
+};
+let language = "en";
+const WALKING_SPEED_METRES_PER_MINUTE = 4500 / 60;
+const STREET_ROUTE_ALLOWANCE = 1.3;
+let i = 0;
+const $ = (id) => document.getElementById(id);
+
+function updateWalkDashboard() {
+  const copy = UI[language];
+  const rows = STOPS.map((stop, index) => {
+    const legMinutes = index === 0 ? 0 : Math.ceil(
+      metres(STOPS[index - 1].lat, STOPS[index - 1].lon, stop.lat, stop.lon) *
+      STREET_ROUTE_ALLOWANCE / WALKING_SPEED_METRES_PER_MINUTE
+    );
+    const totalMinutes = STOPS.slice(1, index + 1).reduce((total, current, offset) => {
+      const previous = STOPS[offset];
+      return total + Math.ceil(
+        metres(previous.lat, previous.lon, current.lat, current.lon) *
+        STREET_ROUTE_ALLOWANCE / WALKING_SPEED_METRES_PER_MINUTE
+      );
+    }, 0);
+    return { stop, legMinutes, totalMinutes, index };
+  });
+  const body = $("walktimes");
+  body.replaceChildren();
+  for (const row of rows) {
+    const tr = document.createElement("tr");
+    if (row.index === i) tr.setAttribute("aria-current", "step");
+    const name = document.createElement("th");
+    name.scope = "row";
+    name.textContent = row.stop[language === "fr" ? "nameFr" : "name"];
+    const leg = document.createElement("td");
+    leg.textContent = row.index === 0 ? copy.start : row.legMinutes + " " + copy.minutes;
+    const total = document.createElement("td");
+    total.textContent = row.totalMinutes + " " + copy.minutes;
+    tr.append(name, leg, total);
+    body.append(tr);
+  }
+}
+
+function show() {
+  const copy = UI[language];
+  const s = STOPS[i];
+  document.documentElement.lang = language;
+  document.title = copy.title;
+  $("title").textContent = copy.title;
+  $("intro").textContent = copy.intro;
+  $("count").textContent = copy.count(i + 1, STOPS.length);
+  $("name").textContent = s[language === "fr" ? "nameFr" : "name"];
+  $("text").textContent = s[language === "fr" ? "textFr" : "text"];
+  $("dirs").textContent = s[language === "fr" ? "directionsFr" : "directions"];
+  $("language").textContent = copy.language;
+  $("language").setAttribute("aria-label", copy.languageLabel);
+  $("nextlabel").textContent = copy.nextLabel;
+  $("speak").textContent = copy.speak;
+  $("maplink").textContent = copy.openMap;
+  $("readlabel").textContent = copy.readDirections;
+  $("where").textContent = copy.howFar;
+  $("map-panel").setAttribute("aria-label", copy.mapAria);
+  $("maptitle").textContent = copy.mapLabel + s[language === "fr" ? "nameFr" : "name"];
+  $("tourmap").title = copy.mapTitle;
+  $("walkheading").textContent = copy.dashboard;
+  $("walknote").textContent = copy.walkNote;
+  $("pointhead").textContent = copy.point;
+  $("leghead").textContent = copy.leg;
+  $("totalhead").textContent = copy.total;
+  $("safety").textContent = copy.safety;
+  $("prev").textContent = copy.back;
+  $("next").textContent = i === STOPS.length - 1 ? copy.finished : copy.next;
+  updateWalkDashboard();
+  $("prev").disabled = i === 0;
+  const has = typeof s.lat === "number" && typeof s.lon === "number";
+  $("maplink").style.display = has ? "" : "none";
+  $("where").style.display = has ? "" : "none";
+  if (has) {
+    $("maplink").href = "https://www.openstreetmap.org/?mlat=" + s.lat + "&mlon=" + s.lon + "#map=18/" + s.lat + "/" + s.lon;
+    $("maptitle").textContent = copy.mapLabel + s[language === "fr" ? "nameFr" : "name"];
+    const pad = 0.003;
+    const bbox = [s.lon - pad, s.lat - pad, s.lon + pad, s.lat + pad].join(",");
+    $("tourmap").src = "https://www.openstreetmap.org/export/embed.html?bbox=" + bbox + "&layer=mapnik&marker=" + s.lat + "," + s.lon;
+  }
+  $("gps").textContent = "";
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  window.scrollTo(0, 0);
+}
+
+function speak() {
+  const copy = UI[language];
+  if (!("speechSynthesis" in window)) { $("gps").textContent = copy.noSpeech; return; }
+  const s = STOPS[i];
+  let words = s[language === "fr" ? "nameFr" : "name"] + ". " + s[language === "fr" ? "textFr" : "text"];
+  if ($("readDirs").checked) words += " " + copy.nextLabel + ": " + s[language === "fr" ? "directionsFr" : "directions"];
+  speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(words);
+  utterance.lang = language === "fr" ? "fr-CA" : "en-CA";
+  speechSynthesis.speak(utterance);
+}
+
+function metres(a, b, c, d) {
+  const R = 6371000, r = Math.PI / 180;
+  const x = Math.sin((c - a) * r / 2) ** 2 + Math.cos(a * r) * Math.cos(c * r) * Math.sin((d - b) * r / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(x));
+}
+
+function where() {
+  const copy = UI[language];
+  const s = STOPS[i];
+  if (!("geolocation" in navigator) || !window.isSecureContext) {
+    $("gps").textContent = copy.needsHttps;
+    return;
+  }
+  $("gps").textContent = copy.finding;
+  navigator.geolocation.getCurrentPosition(
+    (p) => { const m = metres(p.coords.latitude, p.coords.longitude, s.lat, s.lon);
+             $("gps").textContent = copy.distance(Math.round(m / 10) * 10); },
+    () => { $("gps").textContent = copy.noLocation; },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+$("prev").addEventListener("click", () => { if (i > 0) { i--; show(); } });
+$("next").addEventListener("click", () => { if (i < STOPS.length - 1) { i++; show(); } });
+$("speak").addEventListener("click", speak);
+$("where").addEventListener("click", where);
+$("language").addEventListener("click", () => { language = language === "en" ? "fr" : "en"; show(); });
+show();
+</script>
+</body>
+</html>
