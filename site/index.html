@@ -15,13 +15,32 @@
 </head>
 <body>
   <div class="page">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">MONTREAL</p>
+        <h1>Parking Greening Conversion Priorities</h1>
+        <p class="lede">An interactive map of municipal off-street parking locations, ranked by heat exposure to support preliminary greening decisions.</p>
+      </div>
+      <div class="climate-dashboard" aria-label="Montreal 2030 Climate Plan context">
+        <p class="dashboard-title">MONTREAL 2030 CLIMATE PLAN</p>
+        <div class="dashboard-metrics">
+          <div class="dashboard-metric">
+            <strong>500,000</strong>
+            <span>new trees target</span>
+          </div>
+          <div class="dashboard-metric">
+            <strong>2030</strong>
+            <span>plan horizon</span>
+          </div>
+          <div class="dashboard-metric dashboard-strategy">
+            <strong>Asphalt parking lots → green space</strong>
+            <span>one greening strategy</span>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div id="map"></div>
     <main class="story">
-      <h1>Off-Street Parking across the City of Montreal</h1>
-      <p class="lede">One of Montreal's 2030 Climate Plan goals is to plant and maintain 500 000 new trees in an effort to combat urban heat islands. Part of this greening mission involves converting open-air parking lots into green areas.</p>
-
-      <p><strong>This map is for</strong> borough planners, to identify potential parking area candidates as a first step in the conversion process.</p>
-      <p><strong>What you can do here:</strong> filter between different boroughs under the City of Montreal municipality, then click a clustered parking location to see how many source points it combines, an example street and hourly rate, and its average heat temperature.</p>
-
       <form id="borough-search">
         <label for="borough-search-input">Search borough:</label>
         <input id="borough-search-input" type="search" placeholder="Enter a borough name" />
@@ -41,10 +60,10 @@
         <option value="Verdun">Verdun</option>
         <option value="Le Sud-Ouest">Le Sud-Ouest</option>
       </select>
-      <p id="status">Loading clustered parking locations...</p>
+      <p id="status">Loading priority-ranked parking locations...</p>
 
       <section class="shortlist" aria-labelledby="shortlist-title">
-        <h2 id="shortlist-title">Hottest candidates to investigate</h2>
+        <h2 id="shortlist-title">Highest-priority candidates to investigate</h2>
         <label for="minimum-heat-class">Minimum heat class:</label>
         <select id="minimum-heat-class">
           <option value="all">All classes</option>
@@ -52,10 +71,12 @@
           <option value="5">5 only (heat island)</option>
         </select>
         <p id="shortlist-note" class="shortlist-note">
-          Choose a borough to rank locations by average satellite surface temperature.
-          The comparison is against the average of clustered locations in that borough.
-          The class filter uses the highest heat class among a location's source points.
+          Candidates are ranked across all clusters by the average of their heat-class rank
+          and size rank. A hotter heat class and more grouped parking points rank higher;
+          grouped point count is used as a proxy for lot size. Lower average rank scores
+          indicate higher priority.
         </p>
+        <div id="priority-legend" class="priority-legend" aria-label="Average priority score legend"></div>
         <ol id="candidate-list" class="candidate-list" aria-live="polite">
           <li>Loading candidates...</li>
         </ol>
@@ -65,7 +86,7 @@
         <h2>How locations are grouped</h2>
         <p>Parking points within 30 metres are grouped using DBSCAN, separately by borough. Each marker represents one cluster/ parking lot.</p>
         <h2>How to interpret the rankings</h2>
-        <p>Rankings use satellite surface temperatures from one day, 21 August 2025. These are candidates to investigate — not recommendations or a determination that a lot should be converted.</p>
+        <p>Heat class comes from the heat polygon containing each cluster location. Size is estimated from the number of source parking points grouped into each cluster, not a measured lot area. Ranks use satellite data from 21 August 2025; candidates are not recommendations or a determination that a lot should be converted.</p>
         <h2>Where this comes from</h2>
         <ul>
           <li><a href="https://www.agencemobilitedurable.ca/fr/informations/donnees-ouvertes.html">Stationnements municipaux tarifés, sur rue et hors rue</a>, Agence de mobilité durable, Creative Commons CC-BY 4.0, accessed 2026-09-25</li>
@@ -74,7 +95,6 @@
         </ul>
       </section>
     </main>
-    <div id="map"></div>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
