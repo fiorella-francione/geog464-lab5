@@ -33,6 +33,10 @@ Link: https://donnees.montreal.ca/fr/dataset/dbdfbdba-0725-470d-a23e-da69dbedc4e
 Licence: Attribution (CC-BY 4.0)
 Date accessed: 2026-10-23
 
+## Priority score
+
+The map uses a point-in-polygon join to assign each clustered parking location the heat class of the heat polygon containing it. The builder ranks heat class and cluster size (`n_points`) from highest to lowest, averages those ranks, and assigns a final priority rank; lower average rank scores mean higher priority. `n_points` is a proxy for lot size, not a measured area. The heat-grid overlay and its mean-temperature legend can be toggled independently of the priority-colored parking markers. Rebuild the map data with `python scripts/build_parking_priority.py`.
+
 
 ## AI disclosure: Blue lane
 I used the format from Lab 3 to load in my data, export the cleaned rows into a GeoJSON and the check cell. To help with the section on using geopandas to join my parking lot data with their respective boroughs, I used the built-in Copilot chat with the Auto "Balance" model. The method I used for asking the AI was first define my dataset (boroughs.geojson) and join it with df_h (dataframe with only off-street parking rows). I also specified to the AI not to make changes to my notebook and to also include comments to each line of code so I could understand what each line did. It suggested I load the geopandas extension first, create points from my df_h and check that both datasets were in the same coordinate system. Then, it wrote the line for the join but it also wrote a line to save this join into a new GeoJSON. I removed this line because I wanted to save it to the same GeoJSON file I had created earlier. To verify the join, I counted the number of points that did not match a borough and it came up as 0. As for the presentation and behavior of the website, I asked AI to help load in a font family I found online. It also suggested a few details to make the website stand out inlcuding adding a border to the map and changing the background color, which I accepted once I knew how it worked. Some changes had to be made throughout app.js, html and style.css for the legend to show up properly. I tweaked the dimensions of the map size, text, legend to my own liking.
@@ -63,10 +67,10 @@ Test 3. I type "xyz".
  ## Pre-flight report (Lab 7)
 | Check | Result | What I did |
 | 1. Cold start | failed, since I made changes to my data and created parking_cluster.geojson, the github page was not loading the data  | I used git commit to add the geojson file and the page loads properly|
-| 2. Read every label | pass | nothing shows up as undefined, no fix needed |
-| 3. Ask twice | pass |  the first response goes away after searching a second borough, no fix needed |
-| 4. The edge | pass | typing "xyz" to find a borough shows a message "Borough not found, try again. no fix needed |
-| 5. The data does not come | pass | when parking_cluster.geojson is blocked, this message shows up: "Could not load the grid or clustered parking locations. Open the console (F12) for details." |
+| 2. Read every label | pass | nothing shows up as undefined |
+| 3. Ask twice | pass |  the first response goes away after searching a second borough |
+| 4. The edge | pass | typing "xyz" to find a borough shows a message "Borough not found, try again" |
+| 5. The data does not come | pass | when the heat grid or parking_priority.geojson is blocked, this message shows up: "Could not load the heat grid or priority-ranked parking locations. Open the console (F12) for details." |
 | 6. On a phone (size view and my phone) | pass | the page loads properly on a phone, the search feature can still be used |
 | 7. Mouse in my pocket | pass | all points and the search box work as a button |
 | 8. Accessibility audit | pass | accessibility score is 100 |
