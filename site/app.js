@@ -34,16 +34,34 @@ function getHeatLabel(classQual) {
   return heatClasses[classQual] ? heatClasses[classQual].label : 'Unknown';
 }
 
-const temperatureColors = ['#2c7bb6', '#abd9e9', '#ffffbf', '#fdae61', '#d7191c'];
+const priorityColors = ['#398b98', '#e6a14a', '#80a967', '#d97870', '#9272b1'];
+let priorityMin;
+let priorityMax;
+const temperatureColors = ['#4b8f9b', '#89aa78', '#e6b253', '#dc8769', '#b95d5a'];
 let temperatureMin;
 let temperatureMax;
 
-function parseTemperature(value) {
+function parseNumber(value) {
   return value === null || value === undefined || value === '' ? NaN : Number(value);
 }
 
-function colourFor(value) {
-  const temperature = parseTemperature(value);
+function colourForPriority(value) {
+  const score = parseNumber(value);
+  if (!Number.isFinite(score) || priorityMin === undefined || priorityMax === undefined) {
+    return '#999999';
+  }
+  if (priorityMin === priorityMax) {
+    return priorityColors[0];
+  }
+  const classIndex = Math.min(
+    priorityColors.length - 1,
+    Math.floor((score - priorityMin) / (priorityMax - priorityMin) * priorityColors.length)
+  );
+  return priorityColors[Math.max(0, classIndex)];
+}
+
+function colourForTemperature(value) {
+  const temperature = parseNumber(value);
   if (!Number.isFinite(temperature) || temperatureMin === undefined || temperatureMax === undefined) {
     return '#999999';
   }
@@ -55,6 +73,31 @@ function colourFor(value) {
     Math.floor((temperature - temperatureMin) / (temperatureMax - temperatureMin) * temperatureColors.length)
   );
   return temperatureColors[Math.max(0, classIndex)];
+}
+
+function addPriorityLegend() {
+  const div = document.getElementById('priority-legend');
+  let items;
+
+  if (priorityMin === undefined || priorityMax === undefined) {
+    items = '<div>No priority scores</div>';
+  } else if (priorityMin === priorityMax) {
+    items = '<div><span style="background:' + priorityColors[0] + '"></span>' +
+      'All locations have the same score</div>';
+  } else {
+    const interval = (priorityMax - priorityMin) / priorityColors.length;
+    items = priorityColors.map(function (color, index) {
+      const lower = priorityMin + interval * index;
+      const upper = index === priorityColors.length - 1
+        ? priorityMax
+        : priorityMin + interval * (index + 1);
+      return '<div><span style="background:' + color + '"></span>' +
+        lower.toFixed(1) + '–' + upper.toFixed(1) + '</div>';
+    }).join('');
+  }
+
+  div.innerHTML = '<strong>Average rank score</strong><br>' +
+    '<small>Lower score = higher priority</small>' + items;
 }
 
 function addTemperatureLegend() {
@@ -87,7 +130,7 @@ function addTemperatureLegend() {
 }
 
 const gridFile = '../data/borough_heat_grid.geojson';
-const parkingFile = '../data/parking_cluster.geojson';
+const parkingFile = '../data/parking_priority.geojson';
 
 Promise.all([
   fetch(gridFile).then(function (response) {
@@ -95,16 +138,15 @@ Promise.all([
     return response.json();
   }),
   fetch(parkingFile).then(function (response) {
-    if (!response.ok) { throw new Error('HTTP ' + response.status + ' loading parking_cluster.geojson'); }
+    if (!response.ok) { throw new Error('HTTP ' + response.status + ' loading parking_priority.geojson'); }
     return response.json();
   })
 ]).then(function (datasets) {
   const gridData = datasets[0];
   const parkingData = datasets[1];
   const gridTemperatures = gridData.features
-    .map(function (feature) { return parseTemperature(feature.properties.mean_temp); })
+    .map(function (feature) { return parseNumber(feature.properties.mean_temp); })
     .filter(Number.isFinite);
-
   if (gridTemperatures.length > 0) {
     temperatureMin = Math.min.apply(null, gridTemperatures);
     temperatureMax = Math.max.apply(null, gridTemperatures);
@@ -112,19 +154,28 @@ Promise.all([
     console.warn('No valid mean_temp values found in borough_heat_grid.geojson.');
   }
 
+  const scores = parkingData.features
+    .map(function (feature) { return parseNumber(feature.properties.priority_score); })
+    .filter(Number.isFinite);
+  if (scores.length > 0) {
+    priorityMin = Math.min.apply(null, scores);
+    priorityMax = Math.max.apply(null, scores);
+  } else {
+    console.warn('No valid priority_score values found in parking_priority.geojson.');
+  }
+
   const gridLayer = L.geoJSON(gridData, {
     pane: 'gridPane',
     style: function (feature) {
-      const color = colourFor(feature.properties.mean_temp);
       return {
-        color: '#555555',
-        weight: 0.3,
-        fillColor: color,
-        fillOpacity: 0.65
+        color: '#f4f1eb',
+        weight: 0.45,
+        fillColor: colourForTemperature(feature.properties.mean_temp),
+        fillOpacity: 0.78
       };
     },
     onEachFeature: function (feature, layer) {
-      const temperature = parseTemperature(feature.properties.mean_temp);
+      const temperature = parseNumber(feature.properties.mean_temp);
       const temperatureLabel = Number.isFinite(temperature)
         ? temperature.toFixed(1) + ' °C'
         : 'Not available';
@@ -156,7 +207,8 @@ Promise.all([
       return L.marker(latlng, {
         icon: L.divIcon({
           className: 'parking-marker-icon',
-          html: '<span class="parking-symbol">P</span>',
+          html: '<span class="parking-symbol" style="background:' +
+            colourForPriority(feature.properties.priority_score) + '">P</span>',
           iconSize: [12, 12],
           iconAnchor: [12, 12]
         })
@@ -164,15 +216,19 @@ Promise.all([
     },
     onEachFeature: function (feature, layer) {
       const p = feature.properties;
-      const temperature = parseTemperature(p.TempMoyVF);
+      const temperature = parseNumber(p.TempMoyVF);
       const temperatureLabel = Number.isFinite(temperature)
         ? temperature.toFixed(1) + ' °C'
         : 'Not available';
       layer.bindPopup(
         'Street Name: ' + p.sNomRue + '<br>' +
-        'Parking points grouped: ' + p.n_points + '<br>' +
-        'Maximum heat class: ' + p.ClassesNB_ + ' — ' + getHeatLabel(p.ClassQual) + '<br>' +
+        'Parking points in cluster: ' + p.n_points + '<br>' +
+        'Heat class at cluster location: ' + p.ClassesNB_ + ' — ' + getHeatLabel(p.ClassQual) + '<br>' +
         'Average temperature: ' + temperatureLabel + '<br>' +
+        'Heat rank: ' + Number(p.heat_rank).toFixed(1) + '<br>' +
+        'Size rank: ' + Number(p.size_rank).toFixed(1) + '<br>' +
+        'Average rank score: ' + Number(p.priority_score).toFixed(1) + '<br>' +
+        'Priority rank: ' + p.priority_rank + '<br>' +
         'Hourly rate: ' + p.nTarifHoraire + '&cent;<br>' 
       );
     }
@@ -183,33 +239,22 @@ Promise.all([
 
     if (borough === 'all') {
       candidateList.appendChild(document.createElement('li'))
-        .textContent = 'Choose a borough to see its hottest candidates.';
+        .textContent = 'Choose a borough to see its highest-priority candidates.';
       return;
     }
 
     const boroughFeatures = parkingData.features.filter(function (feature) {
       return feature.properties.NOM === borough;
     });
-    const temperatures = boroughFeatures
-      .map(function (feature) { return parseTemperature(feature.properties.TempMoyVF); })
-      .filter(Number.isFinite);
-    if (temperatures.length === 0) {
-      candidateList.appendChild(document.createElement('li'))
-        .textContent = 'No temperature data is available for this borough.';
-      return;
-    }
-
     if (boroughFeatures.some(function (feature) {
-      return !Number.isFinite(parseTemperature(feature.properties.ClassesNB_));
+      return !Number.isFinite(parseNumber(feature.properties.priority_score)) ||
+        !Number.isFinite(parseNumber(feature.properties.n_points));
     })) {
       candidateList.appendChild(document.createElement('li'))
-        .textContent = 'Heat-class data is missing. Rerun the notebook heat join and clustering export.';
+        .textContent = 'Priority data is missing. Rebuild the parking priority GeoJSON.';
       return;
     }
 
-    const boroughAverage = temperatures.reduce(function (sum, value) {
-      return sum + value;
-    }, 0) / temperatures.length;
     const minimumClass = minimumHeatClass.value === 'all'
       ? null
       : Number(minimumHeatClass.value);
@@ -218,11 +263,8 @@ Promise.all([
         return minimumClass === null ||
           Number(feature.properties.ClassesNB_) >= minimumClass;
       })
-      .filter(function (feature) {
-        return Number.isFinite(parseTemperature(feature.properties.TempMoyVF));
-      })
       .sort(function (a, b) {
-        return Number(b.properties.TempMoyVF) - Number(a.properties.TempMoyVF);
+        return Number(a.properties.priority_score) - Number(b.properties.priority_score);
       })
       .slice(0, 10);
 
@@ -232,14 +274,10 @@ Promise.all([
       return;
     }
 
-    candidates.forEach(function (feature, index) {
+    candidates.forEach(function (feature) {
       const properties = feature.properties;
       const temperature = Number(properties.TempMoyVF);
-      const difference = temperature - boroughAverage;
-      const roundedDifference = Math.round(difference * 10) / 10;
-      const differenceLabel = (roundedDifference >= 0 ? '+' : '−') +
-        Math.abs(roundedDifference).toFixed(1) + ' °C vs borough candidate average';
-      const hourlyRate = parseTemperature(properties.nTarifHoraire);
+      const hourlyRate = parseNumber(properties.nTarifHoraire);
       const rateLabel = Number.isFinite(hourlyRate)
         ? '$' + (hourlyRate / 100).toFixed(2) + '/hour'
         : 'Rate unavailable';
@@ -249,18 +287,22 @@ Promise.all([
       button.className = 'candidate-row';
       button.setAttribute(
         'aria-label',
-        'Rank ' + (index + 1) + ', ' + properties.sNomRue + ', ' +
+        'Priority rank ' + properties.priority_rank + ', ' + properties.sNomRue + ', ' +
         properties.n_points + ' parking points, ' +
-        temperature.toFixed(1) + ' degrees Celsius, ' + differenceLabel + ', ' + rateLabel
+        'heat class ' + properties.ClassesNB_ + ', average rank score ' +
+        Number(properties.priority_score).toFixed(1) + ', ' + rateLabel
       );
 
       const address = document.createElement('span');
       address.className = 'candidate-address';
-      address.textContent = (index + 1) + '. ' + (properties.sNomRue || 'Address unavailable');
+      address.textContent = '#' + properties.priority_rank + ' · ' +
+        (properties.sNomRue || 'Address unavailable');
       const details = document.createElement('span');
       details.className = 'candidate-details';
-      details.textContent = properties.n_points + ' parking points · ' +
-        temperature.toFixed(1) + ' °C · ' + differenceLabel + ' · ' + rateLabel;
+      details.textContent = 'Score ' + Number(properties.priority_score).toFixed(1) +
+        ' · Heat class ' + properties.ClassesNB_ + ' · ' + properties.n_points +
+        ' parking points · ' + (Number.isFinite(temperature) ? temperature.toFixed(1) + ' °C' : 'Temperature unavailable') +
+        ' · ' + rateLabel;
       button.append(address, details);
 
       button.addEventListener('click', function () {
@@ -363,14 +405,18 @@ Promise.all([
   showFeatures();
 
   L.control.layers(
-    { 'Click to toggle layers': streets },
-    { 'Urban heat grid (mean °C)': gridLayer, 'Clustered parking locations': parkingLayer },
+    { 'Street map': streets },
+    {
+      'Urban heat grid (mean °C)': gridLayer,
+      'Priority-ranked parking locations': parkingLayer
+    },
     { collapsed: false }
   ).addTo(map);
 
   addTemperatureLegend();
+  addPriorityLegend();
 }).catch(function (err) {
   document.getElementById('status').textContent =
-    'Could not load the grid or clustered parking locations. Open the console (F12) for details.';
+    'Could not load the heat grid or priority-ranked parking locations. Open the console (F12) for details.';
   console.error(err);
 });
