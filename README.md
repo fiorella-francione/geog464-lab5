@@ -41,7 +41,6 @@ At my demo, I was not sure how I would clip my parking lot points to my urban he
 Today I will filter my urban heat island layer for my concerned boroughs, create a grid for them and overlay my parking
 points over it.
 
-Darker square have a higher surface temperature (range of 29.7-35.1 celsius).
 
 ## A3 feature: 
 For A3 I will bring in my second dataset (urban heat island effect) and make a ranking score for each clustered parking lot.
@@ -58,6 +57,19 @@ Test 2. I type a different borough, "Verdun" and click its rank-1 lot.
 Test 3. I type "xyz".
  Expected: "Borough not found, try again" message.
  -> Passed
+
+ How the feature works and which lines do it:
+
+ The lines that do the main work are lines 66-73.
+ - heat_pct makes the parking lot's average temperatures into a percentile (0 to 1). The hottest parking lot will be close to 1
+ - size_pct does the same as heat_pct but it also standardizes the parking lots so that bigger parking lots do not stand out.
+ - priority_score combines both but with a weight of 70% to heat_pct and 30% to size_pct. I did not want to give as much weight to size since the problem for this project is the heat.
+ - priority_rank ranks the lots by borough in descending order. 
+
+one thing I am unsure about is taking the average of the mean temperature of the parking lots since they are now clusterd (TempMoyVF column in the heat island data). I am worried that this may reduce the accuracy of the data and rankings.
+
+## A3 AI Disclosure:
+The first thing I used the built in Copilot AI agent for is to group the individual parking spaces into the lot they fell in. The AI suggested a distance-based approach but originally picked a distance of 50 meters. When checking how this turned out on the map, the new grouped points were slightly offset. So I tweaked the distance and decided to use a 30m distance as this was the most accurate after checking again on the map. I then used AI to create a rank priority score for my A3 feature, computing the new urban heat island dataset. I specified that I needed to work with the "TempMoyVF" column and it suggested to also include the heat classes associated to the points. I kept this since it felt like relevant supporting information. When working with the built in AI, it usually knows to input the code into my notebook without having to be specified. However, it created a new script file where it created the code for the ranking system. I can add this code into my notebook so it's all in the same place, but due to time constraints I will have to do this later on. Finally, I wanted to convert my 3 sentences describing the 2030 Montreal Climate Plan in my A2 version into a smaller dashboard. It gave back a header in the top right in the form of key facts which I did not specify, but I decided to keep it because it seemed to get to the point without drawing too much attention to it. 
 
  ## Pre-flight report (Lab 7)
 | Check | Result | What I did |
