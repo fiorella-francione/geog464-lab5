@@ -96,8 +96,8 @@ function addPriorityLegend() {
     }).join('');
   }
 
-  div.innerHTML = '<strong>Average rank score</strong><br>' +
-    '<small>Lower score = higher priority</small>' + items;
+  div.innerHTML = '<strong>Priority score (0–100)</strong><br>' +
+    '<small>Higher score = higher priority</small>' + items;
 }
 
 function addTemperatureLegend() {
@@ -221,14 +221,11 @@ Promise.all([
         ? temperature.toFixed(1) + ' °C'
         : 'Not available';
       layer.bindPopup(
-        'Street Name: ' + p.sNomRue + '<br>' +
-        'Parking points in cluster: ' + p.n_points + '<br>' +
+        '<strong>' + (p.sNomRue || 'Address unavailable') + '</strong><hr>' +
         'Heat class at cluster location: ' + p.ClassesNB_ + ' — ' + getHeatLabel(p.ClassQual) + '<br>' +
         'Average temperature: ' + temperatureLabel + '<br>' +
-        'Heat rank: ' + Number(p.heat_rank).toFixed(1) + '<br>' +
-        'Size rank: ' + Number(p.size_rank).toFixed(1) + '<br>' +
-        'Average rank score: ' + Number(p.priority_score).toFixed(1) + '<br>' +
-        'Priority rank: ' + p.priority_rank + '<br>' +
+        'Priority score: ' + Number(p.priority_score).toFixed(1) + ' / 100<br>' +
+        'Borough priority rank: ' + p.priority_rank + '<br>' +
         'Hourly rate: ' + p.nTarifHoraire + '&cent;<br>' 
       );
     }
@@ -236,6 +233,7 @@ Promise.all([
 
   function renderShortlist(borough) {
     candidateList.replaceChildren();
+    document.getElementById('candidate-instructions').hidden = borough === 'all';
 
     if (borough === 'all') {
       candidateList.appendChild(document.createElement('li'))
@@ -264,7 +262,7 @@ Promise.all([
           Number(feature.properties.ClassesNB_) >= minimumClass;
       })
       .sort(function (a, b) {
-        return Number(a.properties.priority_score) - Number(b.properties.priority_score);
+        return Number(b.properties.priority_score) - Number(a.properties.priority_score);
       })
       .slice(0, 10);
 
@@ -289,8 +287,8 @@ Promise.all([
         'aria-label',
         'Priority rank ' + properties.priority_rank + ', ' + properties.sNomRue + ', ' +
         properties.n_points + ' parking points, ' +
-        'heat class ' + properties.ClassesNB_ + ', average rank score ' +
-        Number(properties.priority_score).toFixed(1) + ', ' + rateLabel
+        'heat class ' + properties.ClassesNB_ + ', priority score ' +
+        Number(properties.priority_score).toFixed(1) + ' out of 100, ' + rateLabel
       );
 
       const address = document.createElement('span');
@@ -299,7 +297,7 @@ Promise.all([
         (properties.sNomRue || 'Address unavailable');
       const details = document.createElement('span');
       details.className = 'candidate-details';
-      details.textContent = 'Score ' + Number(properties.priority_score).toFixed(1) +
+      details.textContent = 'Score ' + Number(properties.priority_score).toFixed(1) + '/100' +
         ' · Heat class ' + properties.ClassesNB_ + ' · ' + properties.n_points +
         ' parking points · ' + (Number.isFinite(temperature) ? temperature.toFixed(1) + ' °C' : 'Temperature unavailable') +
         ' · ' + rateLabel;
