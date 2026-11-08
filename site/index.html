@@ -70,13 +70,10 @@
           <option value="4">4+ (at-risk or hotter)</option>
           <option value="5">5 only (heat island)</option>
         </select>
-        <p id="shortlist-note" class="shortlist-note">
-          Candidates are ranked across all clusters by the average of their heat-class rank
-          and size rank. A hotter heat class and more grouped parking points rank higher;
-          grouped point count is used as a proxy for lot size. Lower average rank scores
-          indicate higher priority.
+        <div id="priority-legend" class="priority-legend" aria-label="Priority score legend"></div>
+        <p id="candidate-instructions" class="shortlist-note" hidden>
+          Click a ranked parking lot to zoom to it on the map and open its popup.
         </p>
-        <div id="priority-legend" class="priority-legend" aria-label="Average priority score legend"></div>
         <ol id="candidate-list" class="candidate-list" aria-live="polite">
           <li>Loading candidates...</li>
         </ol>
@@ -85,8 +82,6 @@
       <section class="aside">
         <h2>How locations are grouped</h2>
         <p>Parking points within 30 metres are grouped using DBSCAN, separately by borough. Each marker represents one cluster/ parking lot.</p>
-        <h2>How to interpret the rankings</h2>
-        <p>Heat class comes from the heat polygon containing each cluster location. Size is estimated from the number of source parking points grouped into each cluster, not a measured lot area. Ranks use satellite data from 21 August 2025; candidates are not recommendations or a determination that a lot should be converted.</p>
         <h2>Where this comes from</h2>
         <ul>
           <li><a href="https://www.agencemobilitedurable.ca/fr/informations/donnees-ouvertes.html">Stationnements municipaux tarifés, sur rue et hors rue</a>, Agence de mobilité durable, Creative Commons CC-BY 4.0, accessed 2026-09-25</li>
