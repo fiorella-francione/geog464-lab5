@@ -3,17 +3,17 @@ from pathlib import Path
 import geopandas as gpd
 import numpy as np
 
-
+# Read parking cluster and heat island data to perform a spatial join (to associate parking clusters with heat polygons)
 ROOT = Path(__file__).resolve().parents[1]
 LOTS_FILE = ROOT / "data" / "parking_cluster.geojson"
 HEAT_FILE = ROOT / "data" / "heat_island.geojson"
 OUTPUT_FILE = ROOT / "data" / "parking_priority.geojson"
 
-
+# Main function to execute the parking priority calculation
 def main():
     lots = gpd.read_file(LOTS_FILE)
     heat = gpd.read_file(HEAT_FILE)
-
+# Validate that both datasets have a defined CRS and required fields
     if lots.crs is None or heat.crs is None:
         raise ValueError("Both parking clusters and heat polygons must define a CRS.")
     required_lot_fields = {"NOM", "TempMoyVF", "n_points"}
@@ -25,7 +25,7 @@ def main():
     missing_heat_fields = {"ClassesNB_", "ClassQual"} - set(heat.columns)
     if missing_heat_fields:
         raise ValueError(f"Heat polygons are missing fields: {sorted(missing_heat_fields)}")
-
+#  Spatial join (using heat class and quality)
     heat_polygons = heat[["ClassesNB_", "ClassQual", "geometry"]].to_crs(lots.crs)
     lots_without_old_heat = lots.drop(
         columns=["ClassesNB_", "ClassQual"], errors="ignore"
@@ -36,7 +36,7 @@ def main():
         how="left",
         predicate="within",
     )
-
+#  Check for duplicates and unmatched parking clusters
     if joined.index.duplicated().any():
         raise ValueError("A parking cluster matched multiple heat polygons.")
     unmatched = joined["ClassesNB_"].isna()
@@ -62,7 +62,7 @@ def main():
         or (joined["n_points"] <= 0).any()
     ):
         raise ValueError("Every parking cluster must have a positive n_points value.")
-
+#   Compute priority score based on heat and size percentiles, then rank within each borough
     joined["heat_pct"] = joined["TempMoyVF"].rank(pct=True)
     joined["size_pct"] = np.log(joined["n_points"]).rank(pct=True)
     joined["priority_score"] = (
@@ -79,6 +79,6 @@ def main():
     )
     print(f"Wrote {len(joined)} ranked parking clusters to {OUTPUT_FILE}")
 
-
+# Run the main function if this script is executed directly
 if __name__ == "__main__":
     main()
