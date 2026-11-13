@@ -34,10 +34,10 @@ function getHeatLabel(classQual) {
   return heatClasses[classQual] ? heatClasses[classQual].label : 'Unknown';
 }
 
-const priorityColors = ['#398b98', '#e6a14a', '#80a967', '#d97870', '#9272b1'];
+const priorityColors = ['#398b98', '#e6a14a', '#8fbe7f', '#d97870', '#9272b1'];
 let priorityMin;
 let priorityMax;
-const temperatureColors = ['#4b8f9b', '#89aa78', '#e6b253', '#dc8769', '#b95d5a'];
+const temperatureColors = ['#4b5c9b', '#a7a8cd', '#f1d9ae', '#dc8769', '#b95d5a'];
 let temperatureMin;
 let temperatureMax;
 
@@ -220,13 +220,17 @@ Promise.all([
       const temperatureLabel = Number.isFinite(temperature)
         ? temperature.toFixed(1) + ' °C'
         : 'Not available';
+      const hourlyRate = parseNumber(p.nTarifHoraire);
+      const rateLabel = Number.isFinite(hourlyRate)
+        ? '$' + (hourlyRate / 100).toFixed(2) + '/hour'
+        : 'Rate unavailable';
       layer.bindPopup(
         '<strong>' + (p.sNomRue || 'Address unavailable') + '</strong><hr>' +
-        'Heat class at cluster location: ' + p.ClassesNB_ + ' — ' + getHeatLabel(p.ClassQual) + '<br>' +
-        'Average temperature: ' + temperatureLabel + '<br>' +
+        'Heat class: ' + p.ClassesNB_ + ' — ' + getHeatLabel(p.ClassQual) + '<br>' +
+        'Average surface temperature: ' + temperatureLabel + '<br>' +
         'Priority score: ' + Number(p.priority_score).toFixed(1) + ' / 100<br>' +
         'Borough priority rank: ' + p.priority_rank + '<br>' +
-        'Hourly rate: ' + p.nTarifHoraire + '&cent;<br>' 
+        'Hourly rate: ' + rateLabel + '<br>'
       );
     }
   }).addTo(map);
