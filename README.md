@@ -60,16 +60,16 @@ Test 3. I type "xyz".
 
  How the feature works and which lines do it:
 
- The lines that do the main work are lines 66-73.
- - heat_pct makes the parking lot's average temperatures into a percentile (0 to 1). The hottest parking lot will be close to 1
- - size_pct does the same as heat_pct but it also standardizes the parking lots so that bigger parking lots do not stand out.
- - priority_score combines both but with a weight of 70% to heat_pct and 30% to size_pct. I did not want to give as much weight to size since the problem for this project is the heat.
- - priority_rank ranks the lots by borough in descending order. 
+ The lines that do the main work is in cell 3 of Part 9 in lab3_table_to_map.ipynb:
+ - "heat_pct" makes the parking lot's average temperatures into a percentile (0 to 1). The hottest parking lot will be close to 1
+ - "size_pct" does the same as heat_pct but it also standardizes the parking lots so that bigger parking lots do not stand out.
+ - "priority_score" combines both but with a weight of 70% to heat_pct and 30% to size_pct. I did not want to give as much weight to size since the problem for this project is the heat.
+ - "priority_rank" ranks the lots by borough (joined.groupby("NOM")) in descending order. whatever is ranked 1st has the highest priority.
 
-one thing I am unsure about is taking the average of the mean temperature of the parking lots since they are now clusterd (TempMoyVF column in the heat island data). I am worried that this may reduce the accuracy of the data and rankings.
+one thing I am unsure about is taking the average of the mean temperature of the parking lots since they are now clustered (TempMoyVF column in the heat island data). I am worried that this may reduce the accuracy of the data and rankings.
 
 ## A3 AI Disclosure:
-The first thing I used the built in Copilot AI agent for is to group the individual parking spaces into the lot they fell in. The AI suggested a distance-based approach but originally picked a distance of 50 meters. When checking how this turned out on the map, the new grouped points were slightly offset. So I tweaked the distance and decided to use a 30m distance as this was the most accurate after checking again on the map. I then used AI to create a rank priority score for my A3 feature, computing the new urban heat island dataset. I specified that I needed to work with the "TempMoyVF" column and it suggested to also include the heat classes associated to the points. I kept this since it felt like relevant supporting information. Finally, I wanted to convert my 3 sentences describing the 2030 Montreal Climate Plan in my A2 version into a smaller dashboard. It gave back a header in the top right in the form of key facts which I did not specify, but I decided to keep it because it seemed to get to the point without drawing too much attention to it. 
+The first thing I used the built in Copilot AI agent (Fusion, Standard model) for is to cluster the individual parking spaces into the lot they fell in. The AI suggested a distance-based approach but originally picked a distance of 50 meters. To verify this, I checked the map to see if the new clusters fell in the right lot but found that some were slightly offset. So I tweaked the distance and decided to use a 30m distance as this was the most accurate after checking again on the map. I then used AI to create a rank priority score for my A3 feature, computing the new urban heat island dataset. I specified that I needed to work with the "TempMoyVF" column and it suggested to create heat classes based on this column. I kept this since it felt like relevant supporting information. To verify the rank, I clicked on a borough and made sure that the top ranked parking lots had the highest surface temperatures, which was true. Finally, I wanted to convert my 3 sentences describing the 2030 Montreal Climate Plan in my A2 version into a smaller dashboard. It gave back a header in the top right in the form of key facts which I did not specify, but I decided to keep it because it seemed to get to the point without drawing too much attention to it. 
 
  ## Pre-flight report (Lab 7)
 | Check | Result | What I did |
@@ -81,3 +81,10 @@ The first thing I used the built in Copilot AI agent for is to group the individ
 | 6. On a phone (size view and my phone) | pass | the page loads properly on a phone, the search feature can still be used |
 | 7. Mouse in my pocket | pass | all points and the search box work as a button |
 | 8. Accessibility audit | pass | accessibility score is 100 |
+
+## Part 3: what I found, and one fix
+Evidence: for rounds 1 and 2, the user did not know to look at the first parking lots listed in the ranked priority list right away for task 3.
+Severity: 2, this slowed them down, there is an instruction telling the user to click on a ranked parking lot to zoom into it but it was not clear/ intuitive. 
+My change: I will move the instruction above the legend so that the user likely reads it first and understands how to identify the top priority candidates for a selected borough.
+Recheck: I asked another student to test task 3 (finding the 3 parking lots in Outremont to convert first), fixed, they were able to find the top 3 easily.
+also fixed: the urban heat grid colors (now a blue-red gradient)
