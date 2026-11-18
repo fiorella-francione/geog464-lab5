@@ -412,7 +412,7 @@ Promise.all([
       'Urban heat grid (mean °C)': gridLayer,
       'Priority-ranked parking locations': parkingLayer
     },
-    { collapsed: false }
+    { collapsed: false, position: 'topleft' }
   ).addTo(map);
 
   addTemperatureLegend();
