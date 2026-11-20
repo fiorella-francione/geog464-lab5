@@ -88,3 +88,9 @@ Severity: 2, this slowed them down, there is an instruction telling the user to 
 My change: I will move the instruction above the legend so that the user likely reads it first and understands how to identify the top priority candidates for a selected borough.
 Recheck: I asked another student to test task 3 (finding the 3 parking lots in Outremont to convert first), fixed, they were able to find the top 3 easily.
 also fixed: the urban heat grid colors (now a blue-red gradient)
+
+## What my map remembers:
+- Using remember.js, I added a feature that allows the user to favorite parking lots into "My places". This suits the audience of borough planners who have to shortlist and rank parking lots to find the best potential candidates to convert into green space.
+- The saved places are kept on the user's browser. A "download places" button also allows the user to download the saved points as a GeoJSON on their own device.
+- When a user saves a point, it changes the button from "Save to My places" to "Saved (remove)" in the popup, the same button allows the user to remove the point from favorites.
+- remember.js does the work, index.html add its to the map. lines 124-137 in remember.js adds a parking lot and updates in the saved places panel.
