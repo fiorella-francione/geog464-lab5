@@ -62,6 +62,16 @@
       </select>
       <p id="status">Loading priority-ranked parking locations...</p>
 
+      <details class="saved-places" id="saved-places">
+        <summary>Saved places <span id="saved-place-count">0</span></summary>
+        <ul id="saved-place-list" class="saved-place-list" aria-live="polite">
+          <li>No saved places yet.</li>
+        </ul>
+        <button type="button" id="download-saved-places" class="download-saved-places" disabled>
+          Download saved places (GeoJSON)
+        </button>
+      </details>
+
       <section class="shortlist" aria-labelledby="shortlist-title">
         <h2 id="shortlist-title">Highest-priority candidates to investigate</h2>
         <label for="minimum-heat-class">Minimum heat class:</label>
@@ -93,8 +103,8 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="remember.js"></script>
   <script src="app.js"></script>
-  <script src="memory.js"></script>
 <script>addMemory(map);</script>
 </body>
 </html>
