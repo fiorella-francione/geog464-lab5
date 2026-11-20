@@ -405,6 +405,86 @@ Promise.all([
     renderShortlist(boroughFilter.value);
   });
   showFeatures();
+  rememberMarks(map, parkingLayer, { idField: 'sNomRue', nameField: 'sNomRue' }); // remember.js line
+
+  const savedPlaceCount = document.getElementById('saved-place-count');
+  const savedPlaceList = document.getElementById('saved-place-list');
+  const downloadSavedPlaces = document.getElementById('download-saved-places');
+  const favouritesKey = 'geog464-favourites:' + location.pathname.replace(/[^/]*$/, '');
+
+  function loadSavedPlaceIds() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(favouritesKey));
+      return Array.isArray(saved) ? saved : [];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function renderSavedPlaces() {
+    const savedIds = loadSavedPlaceIds();
+    savedPlaceCount.textContent = savedIds.length;
+    downloadSavedPlaces.disabled = savedIds.length === 0;
+    savedPlaceList.replaceChildren();
+
+    if (savedIds.length === 0) {
+      const item = document.createElement('li');
+      item.textContent = 'No saved places yet.';
+      savedPlaceList.appendChild(item);
+      return;
+    }
+
+    savedIds.forEach(function (id) {
+      const feature = parkingData.features.find(function (candidate) {
+        return String(candidate.properties.sNomRue) === String(id);
+      });
+      if (!feature) return;
+
+      const item = document.createElement('li');
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'saved-place-row';
+      button.textContent = feature.properties.sNomRue;
+      button.addEventListener('click', function () {
+        selectBorough('all');
+        parkingLayer.eachLayer(function (layer) {
+          if (String(layer.feature.properties.sNomRue) === String(id)) {
+            map.setView(layer.getLatLng(), 16);
+            layer.openPopup();
+          }
+        });
+      });
+      item.appendChild(button);
+      savedPlaceList.appendChild(item);
+    });
+  }
+
+  downloadSavedPlaces.addEventListener('click', function () {
+    const savedIds = loadSavedPlaceIds();
+    const features = parkingData.features.filter(function (feature) {
+      return savedIds.includes(String(feature.properties.sNomRue));
+    });
+    const geojson = {
+      type: 'FeatureCollection',
+      name: 'saved_parking_places',
+      features: features
+    };
+    const blob = new Blob([JSON.stringify(geojson, null, 2)], { type: 'application/geo+json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'saved-parking-places.geojson';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  window.addEventListener('geog464:marks-changed', renderSavedPlaces);
+  window.addEventListener('storage', function (event) {
+    if (event.key === favouritesKey) renderSavedPlaces();
+  });
+  renderSavedPlaces();
 
   L.control.layers(
     { 'Street map': streets },
