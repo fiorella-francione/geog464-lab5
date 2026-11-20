@@ -164,6 +164,72 @@ label[for="borough-filter"] {
 .shortlist h2 {
   margin-bottom: 10px;
 }
+.saved-places {
+  margin: 18px 0 8px;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--accent);
+  border-radius: 2px;
+  background: #fff;
+}
+.saved-places summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+#saved-place-count {
+  min-width: 24px;
+  padding: 0 6px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  text-align: center;
+}
+.saved-place-list {
+  max-height: 250px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 8px 12px 12px;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+.saved-place-list li + li {
+  margin-top: 6px;
+}
+.saved-place-row {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--text);
+  font: 500 14px var(--sans);
+  text-align: left;
+  cursor: pointer;
+}
+.saved-place-row:hover,
+.saved-place-row:focus-visible {
+  border-color: var(--accent);
+  background: #e9e5dc;
+}
+.download-saved-places {
+  width: calc(100% - 24px);
+  margin: 0 12px 12px;
+  padding: 9px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 2px;
+  background: var(--accent);
+  color: #fff;
+  font: 600 14px var(--sans);
+  cursor: pointer;
+}
+.download-saved-places:disabled {
+  border-color: var(--line);
+  background: var(--paper);
+  color: var(--muted);
+  cursor: not-allowed;
+}
 .shortlist > label {
   display: block;
   margin: 0 0 6px;
