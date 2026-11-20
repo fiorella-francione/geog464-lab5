@@ -464,7 +464,7 @@ Promise.all([
     const features = parkingData.features.filter(function (feature) {
       return savedIds.includes(String(feature.properties.sNomRue));
     });
-    const geojson = {
+    const geojson = { // until 480, creates and downloads a GeoJSON file with the saved parking places
       type: 'FeatureCollection',
       name: 'saved_parking_places',
       features: features
@@ -479,7 +479,7 @@ Promise.all([
     link.remove();
     URL.revokeObjectURL(url);
   });
-
+// refreshes the dashboard after changes
   window.addEventListener('geog464:marks-changed', renderSavedPlaces);
   window.addEventListener('storage', function (event) {
     if (event.key === favouritesKey) renderSavedPlaces();
